@@ -1,12 +1,24 @@
 # DVRemuxer
 
-Converts Dolby Vision profile 7 (dual-layer) to profile 8.1 (single-layer) for better compatibility. The conversion is fully reversible as the original enhancement layer is preserved.
+## General
 
-## Requirements
+Batch conversion tool that scans directories and converts Dolby Vision profile 7 (dual-layer) to profile 8.1 (single-layer) for improved device compatibility. The tool preserves original quality while ensuring broader playback support, and all conversions are fully reversible.
 
-- `mediainfo` - Detects Dolby Vision profiles
-- `dovi_tool` - Processes DV metadata ([GitHub](https://github.com/quietvoid/dovi_tool))
-- `mkvtoolnix` - MKV muxing/demuxing
+**Key features:**
+- Scans entire directory trees for DV content
+- Identifies and converts only DV7 files that need processing
+- Preserves all audio tracks and subtitles
+- Creates restoration files for reversibility
+
+## Setup
+
+### Requirements
+
+- `mediainfo` - Media file analysis
+- `dovi_tool` - Dolby Vision metadata processing ([GitHub](https://github.com/quietvoid/dovi_tool))
+- `mkvtoolnix` - MKV container operations
+
+### Installation
 
 ```bash
 # Ubuntu/Debian
@@ -14,11 +26,14 @@ sudo apt install mediainfo mkvtoolnix
 
 # macOS
 brew install mediainfo mkvtoolnix
+
+# Install dovi_tool from GitHub releases
 ```
 
-## Quick Start
+### Usage
 
 ```bash
+# Clone and setup
 git clone <repository-url>
 cd DVRemuxer
 chmod +x DVRemuxer.sh
@@ -27,71 +42,60 @@ chmod +x DVRemuxer.sh
 ./DVRemuxer.sh
 
 # Scan specific directory
-./DVRemuxer.sh /path/to/videos
+./DVRemuxer.sh /path/to/media
+
+# Keep intermediate files
+./DVRemuxer.sh -k /path/to/media
 ```
 
-## What It Does
+**Options:**
+- `-h, --help` - Display help message
+- `-k, --keep-files` - Keep intermediate working files
+- `PATH` - Target directory (default: current directory)
 
-1. **Scans** for Dolby Vision MKV files
-2. **Identifies** DV7 files that need conversion
-3. **Converts** DV7 → DV8.1 (keeps original audio/subtitles)
-4. **Creates** restoration files:
-   - `.DV7.EL_RPU.hevc` - Original enhancement layer
-   - `.DV8.L1_plot.png` - Brightness metadata graph
+## Technical Details
 
-## Example
+### How It Works
 
-```
-Scanning for DV files in: /Videos
+1. **Scans** directory for all MKV files
+2. **Detects** Dolby Vision profile using mediainfo
+3. **Converts** DV7 to DV8.1 using dovi_tool (removes enhancement layer, keeps RPU metadata)
+4. **Preserves** original enhancement layer for potential restoration
+5. **Remuxes** converted video with original audio/subtitle tracks
 
-Filename                          Type    Size    Status
---------------------------------------------------------
-movie1.mkv                        DV7     45G     ○
-movie2.mkv                        DV5     32G     ✓
-movie3.mkv                        DV7     40G     ✓
-  └─ movie3.DV8.mkv              DV8.1   38G     ✓
+### File Structure
 
-Found 1 DV7 files that need conversion to DV8.1
-Convert them now? [y/N]
+For each `movie.mkv` conversion:
+
+**Created files:**
+- `movie.DV8.mkv` - Converted file with DV8.1 video + original audio/subtitles
+- `movie.DV7.EL_RPU.hevc` - Preserved enhancement layer for restoration
+- `movie.DV8.L1_plot.png` - Visual graph of brightness metadata
+
+**Temporary files (deleted unless using `-k`):**
+- `.BL_EL_RPU.hevc` - Extracted video stream
+- `.DV8.BL_RPU.hevc` - Converted video stream
+- `.DV8.RPU.bin` - RPU metadata
+
+### Restoration Process
+
+To restore a file back to DV7:
+
+```bash
+# Extract base layer
+mkvextract movie.DV8.mkv tracks 0:BL.hevc
+
+# Recombine with preserved enhancement layer
+dovi_tool mux --bl BL.hevc --el movie.DV7.EL_RPU.hevc -o movie.DV7.hevc
+
+# Remux to MKV
+mkvmerge -o movie.DV7.restored.mkv -D movie.DV8.mkv movie.DV7.hevc --track-order 1:0
 ```
 
 ## Notes
 
-- Profile 8.1 maintains DV7 quality with better device compatibility
-- Outputs both CMv4.0 and CMv2.9 metadata
-- Original DV7 can be restored using the `.DV7.EL_RPU.hevc` file
-- Compatible with all Apple TV 4K models (2021 uses CMv2.9, 2023 uses CMv4.0)
-
-## Technical Details
-
-For each conversion of `movie.mkv`, the following files are created:
-
-**Input:**
-- `movie.mkv` - Original DV7 file with dual-layer HEVC video + audio/subtitles
-
-**Intermediate files (deleted unless using `-k`):**
-- `movie.BL_EL_RPU.hevc` - Extracted dual-layer HEVC stream (base + enhancement + RPU)
-- `movie.DV8.BL_RPU.hevc` - Converted single-layer HEVC stream (base + RPU only)
-- `movie.DV8.RPU.bin` - Extracted RPU metadata for analysis
-
-**Output files:**
-- `movie.DV8.mkv` - Final DV8.1 file with converted video + original audio/subtitles
-- `movie.DV7.EL_RPU.hevc` - Preserved enhancement layer + RPU (for restoration)
-- `movie.DV8.L1_plot.png` - Graph of L1 brightness metadata over time
-
-The converter extracts the HEVC stream, separates the enhancement layer for archival, converts to profile 8.1 (removing EL but keeping RPU), then remuxes with the original audio/subtitle tracks.
-
-## Restoring to DV7
-
-To restore a file back to DV7 using the preserved enhancement layer:
-
-```bash
-# Extract base layer from DV8 file
-mkvextract movie.DV8.mkv tracks 0:BL.hevc
-
-# Mux base layer with preserved enhancement layer
-dovi_tool mux --bl BL.hevc --el movie.DV7.EL_RPU.hevc --output movie.DV7.hevc
-
-# Remux into MKV container
-mkvmerge -o movie.DV7.restored.mkv -D movie.DV8.mkv movie.DV7.hevc --track-order 1:0
-```
+- **Profile 8.1** maintains DV7 visual quality while ensuring compatibility with more devices
+- **Apple TV compatibility**: 2021 models use CMv2.9, 2022+ models use CMv4.0 (tool outputs both)
+- **Storage**: DV8.1 files are typically 5-10% smaller due to removed enhancement layer
+- **Performance**: Processing speed depends on file size and system capabilities
+- All files remain organized within their source directories during conversion
