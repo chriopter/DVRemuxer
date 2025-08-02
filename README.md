@@ -33,25 +33,18 @@ brew install mediainfo mkvtoolnix
 ### Usage
 
 ```bash
-# Clone and setup
-git clone <repository-url>
-cd DVRemuxer
-chmod +x DVRemuxer.sh
-
-# Scan and convert current directory
-./DVRemuxer.sh
 
 # Scan specific directory
 ./DVRemuxer.sh /path/to/media
 
 # Keep intermediate files
 ./DVRemuxer.sh -k /path/to/media
-```
 
-**Options:**
 - `-h, --help` - Display help message
 - `-k, --keep-files` - Keep intermediate working files
-- `PATH` - Target directory (default: current directory)
+```
+
+
 
 ## Technical Details
 
