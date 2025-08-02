@@ -96,6 +96,3 @@ mkvmerge -o movie.DV7.restored.mkv -D movie.DV8.mkv movie.DV7.hevc --track-order
 
 - **Profile 8.1** maintains DV7 visual quality while ensuring compatibility with more devices
 - **Apple TV compatibility**: 2021 models use CMv2.9, 2022+ models use CMv4.0 (tool outputs both)
-- **Storage**: DV8.1 files are typically 5-10% smaller due to removed enhancement layer
-- **Performance**: Processing speed depends on file size and system capabilities
-- All files remain organized within their source directories during conversion
