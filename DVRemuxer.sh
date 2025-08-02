@@ -121,15 +121,16 @@ convertFiles() {
     echo "Remuxing to DV8.1 (profile 8.1) with CMv4.0 + CMv2.9..."
     
     for mkvFile in "$@"; do
+        local mkvDir=$(dirname "$mkvFile")
         local mkvBase=$(basename "$mkvFile" .mkv)
         echo ""
         echo "Processing: $mkvBase"
         echo "========================================="
         
-        # Working file names
-        local BL_EL_RPU_HEVC="${mkvBase}.BL_EL_RPU.hevc"
-        local DV7_EL_RPU_HEVC="${mkvBase}.DV7.EL_RPU.hevc"
-        local DV8_BL_RPU_HEVC="${mkvBase}.DV8.BL_RPU.hevc"
+        # Working file names - all in the source directory
+        local BL_EL_RPU_HEVC="${mkvDir}/${mkvBase}.BL_EL_RPU.hevc"
+        local DV7_EL_RPU_HEVC="${mkvDir}/${mkvBase}.DV7.EL_RPU.hevc"
+        local DV8_BL_RPU_HEVC="${mkvDir}/${mkvBase}.DV8.BL_RPU.hevc"
         
         echo "Extracting HEVC stream..."
         mkvextract "$mkvFile" tracks 0:"$BL_EL_RPU_HEVC"
@@ -154,18 +155,18 @@ convertFiles() {
         [[ $keepFiles == 0 ]] && rm -f "$BL_EL_RPU_HEVC"
         
         echo "Creating L1 plot..."
-        local DV8_RPU_BIN="${mkvBase}.DV8.RPU.bin"
+        local DV8_RPU_BIN="${mkvDir}/${mkvBase}.DV8.RPU.bin"
         dovi_tool extract-rpu "$DV8_BL_RPU_HEVC" -o "$DV8_RPU_BIN"
-        dovi_tool plot "$DV8_RPU_BIN" -o "${mkvBase}.DV8.L1_plot.png"
+        dovi_tool plot "$DV8_RPU_BIN" -o "${mkvDir}/${mkvBase}.DV8.L1_plot.png"
         [[ $keepFiles == 0 ]] && rm -f "$DV8_RPU_BIN"
         
         echo "Remuxing to MKV..."
-        mkvmerge -o "${mkvBase}.DV8.mkv" -D "$mkvFile" "$DV8_BL_RPU_HEVC" --track-order 1:0
+        mkvmerge -o "${mkvDir}/${mkvBase}.DV8.mkv" -D "$mkvFile" "$DV8_BL_RPU_HEVC" --track-order 1:0
         
         [[ $keepFiles == 0 ]] && rm -f "$DV8_BL_RPU_HEVC"
         
-        if [[ -f "${mkvBase}.DV8.mkv" ]]; then
-            echo "✓ Successfully converted: ${mkvBase}.DV8.mkv"
+        if [[ -f "${mkvDir}/${mkvBase}.DV8.mkv" ]]; then
+            echo "✓ Successfully converted: ${mkvDir}/${mkvBase}.DV8.mkv"
             processedFiles+=("$mkvFile")
         else
             echo "✗ Conversion failed for: $mkvFile"
