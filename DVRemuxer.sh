@@ -144,7 +144,7 @@ convertFiles() {
         dovi_tool demux --el-only "$BL_EL_RPU_HEVC" -e "$DV7_EL_RPU_HEVC"
         
         echo "Converting to DV8.1 (profile 8.1)..."
-        dovi_tool convert --discard -m 2 "$BL_EL_RPU_HEVC" -o "$DV8_BL_RPU_HEVC"
+        dovi_tool -m 2 convert --discard "$BL_EL_RPU_HEVC" -o "$DV8_BL_RPU_HEVC"
         
         if [[ ! -f "$DV8_BL_RPU_HEVC" ]]; then
             echo "ERROR: Failed to convert to DV8.1"
