@@ -33,16 +33,20 @@ brew install mediainfo mkvtoolnix
 ### Usage
 
 ```bash
-
-# Scan specific directory
+# Scan and convert DV7 files
 ./DVRemuxer.sh /path/to/media
 
-# Keep intermediate files
+# Keep intermediate files during conversion
 ./DVRemuxer.sh -k /path/to/media
 
+# Clean up original files after conversion
+./DVRemuxer.sh -c /path/to/media
+```
+
+**Options:**
 - `-h, --help` - Display help message
 - `-k, --keep-files` - Keep intermediate working files
-```
+- `-c, --cleanup` - Verify and delete original DV7 files after successful conversion
 
 
 
@@ -55,6 +59,21 @@ brew install mediainfo mkvtoolnix
 3. **Converts** DV7 to DV8.1 using dovi_tool (removes enhancement layer, keeps RPU metadata)
 4. **Preserves** original enhancement layer for potential restoration
 5. **Remuxes** converted video with original audio/subtitle tracks
+
+### Cleanup Mode
+
+The cleanup mode (`-c` option) safely removes original DV7 files after verifying successful conversion:
+
+1. **Scans** for DV7 files with existing DV8 conversions
+2. **Verifies** conversion integrity:
+   - Checks that `movie.DV8.mkv` exists
+   - Checks that `movie.DV7.EL_RPU.hevc` exists
+   - Confirms combined size is within 1% of original
+3. **Displays** verification results with size differences
+4. **Prompts** for confirmation before deletion
+5. **Deletes** only files that pass all verification checks
+
+This ensures original files are only removed after confirming the conversion was successful and all data is preserved.
 
 ### File Structure
 
