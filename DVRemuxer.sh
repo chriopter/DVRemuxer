@@ -244,7 +244,7 @@ cleanupVerifiedFiles() {
             if awk -v diff="$sizeDiff" 'BEGIN {exit !(diff <= 1.0)}'; then
                 verifiedFiles+=("$mkvFile")
                 totalOriginalSize=$((totalOriginalSize + origSize))
-                totalSavedSpace=$((totalSavedSpace + origSize - dv8Size))
+                totalSavedSpace=$((totalSavedSpace + origSize))
                 printf "%-65s %-10s %-10s %-10s\n" "${mkvBase:0:63}" "$origSizeH" "$dv8SizeH" "✓ ${sizeDiff}%"
             else
                 printf "%-65s %-10s %-10s %-10s\n" "${mkvBase:0:63}" "$origSizeH" "$dv8SizeH" "✗ ${sizeDiff}%"
