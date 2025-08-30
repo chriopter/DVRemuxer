@@ -33,8 +33,11 @@ brew install mediainfo mkvtoolnix
 ### Usage
 
 ```bash
-# Scan and convert DV7 files
+# Interactive mode - scan and convert DV7 files with confirmation
 ./DVRemuxer.sh /path/to/media
+
+# Automatic mode - convert without prompts (for automation/scripts)
+./DVRemuxer_auto.sh /path/to/media
 
 # Keep intermediate files during conversion
 ./DVRemuxer.sh -k /path/to/media
@@ -43,10 +46,12 @@ brew install mediainfo mkvtoolnix
 ./DVRemuxer.sh -c /path/to/media
 ```
 
-**Options:**
+**DVRemuxer.sh Options:**
 - `-h, --help` - Display help message
 - `-k, --keep-files` - Keep intermediate working files
 - `-c, --cleanup` - Verify and delete original DV7 files after successful conversion
+
+**DVRemuxer_auto.sh** is designed for automation workflows and runs without user interaction.
 
 
 
